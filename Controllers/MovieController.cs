@@ -27,7 +27,7 @@ namespace dotnet_movie_api.Controllers
         public async Task<IActionResult> GetMoviesCount()
         {
             var count = await _context.Movies.CountAsync();
-            return Ok($"Movies in DB: {count}");
+            return Ok($"{count}");
         }
         [HttpGet("{id}")]
         public async Task<ActionResult<Movie>> GetMovieById(int id)
@@ -51,7 +51,7 @@ namespace dotnet_movie_api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddMovie(Movie movie)
+        public async Task<IActionResult> AddMovie([FromBody] Movie movie)
         {
             _context.Movies.Add(movie);
             await _context.SaveChangesAsync();

@@ -14,7 +14,7 @@ namespace dotnet_movie_api.Databace
         public DbSet<Show> Shows { get;  set; }
         public DbSet<Seat> Seats { get; set; }
         public DbSet<Screen> Screens { get; set; }
-        public DbSet<Theator> Theaters { get; set; }
+        public DbSet<Theater> Theaters { get; set; }
         public DbSet<Showtime> Showtimes { get; set; }
         public DbSet<Admin> Admins { get; set; }
       
@@ -25,8 +25,8 @@ namespace dotnet_movie_api.Databace
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // This forces EF to look for "Theators" table instead of "theaters"
-            modelBuilder.Entity<Theator>().ToTable("Theators");
-
+            //  modelBuilder.Entity<Theator>().ToTable("Theators");
+            modelBuilder.Entity<Theater>().ToTable("Theaters");
             // It is good practice to do the same for Screens
             modelBuilder.Entity<Screen>().ToTable("Screens");
 

@@ -7,7 +7,7 @@
         public int Capacity { get; set; }
 
         public int TheaterId { get; set; }
-        public Theator Theater { get; set; } = null!;
+        public Theater Theater { get; set; } = null!;
 
         // Navigation properties
         public List<Seat> Seats { get; set; } = new();

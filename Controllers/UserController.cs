@@ -141,7 +141,7 @@ namespace dotnet_movie_api.Controllers
 
         // ✅ DELETE USER
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> DeleteUser(int id) 
         {
             var user = await _context.Users.FindAsync(id);
 

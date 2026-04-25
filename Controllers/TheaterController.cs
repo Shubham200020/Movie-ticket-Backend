@@ -19,17 +19,25 @@ namespace dotnet_movie_api.Controllers
 
         // 1. READ ALL: GET api/theator
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Theator>>> GetTheators()
+        public async Task<ActionResult<IEnumerable<Theater>>> GetTheators()
         {
-            // We use the DbSet name 'Theaters' to fetch 'Theator' objects
-            return await _context.Theaters
-                .Include(t => t.Screens) // Eager loading associated screens
-                .ToListAsync();
-        }
 
+            var theaters = await _context.Theaters
+       .Include(t => t.Location)   // ✅ ADD THIS
+       .Include(t => t.Screens)
+       .ToListAsync();
+
+            return Ok(theaters);
+        }
+        [HttpGet("theator-count")]
+        public async Task<IActionResult> GetMoviesCount()
+        {
+            var count = await _context.Theaters.CountAsync();
+            return Ok($"{count}");
+        }
         // 2. READ ONE: GET api/theator/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Theator>> GetTheator(int id)
+        public async Task<ActionResult<Theater>> GetTheator(int id)
         {
             var theator = await _context.Theaters
                 .Include(t => t.Screens)
@@ -38,35 +46,58 @@ namespace dotnet_movie_api.Controllers
             if (theator == null) return NotFound();
             return theator;
         }
+        [HttpGet("by-location/{locationId}")]
+        public async Task<ActionResult<IEnumerable<Theater>>> GetByLocation(int locationId)
+        {
+            var theaters = await _context.Theaters
+                .Where(t => t.LocationId == locationId)
+                .Include(t => t.Location)
+                .Include(t => t.Screens)
+                .ToListAsync();
 
+            if (!theaters.Any())
+                return NotFound("No theaters found");
+
+            return Ok(theaters); // ✅ correct
+        }
         // 3. CREATE: POST api/theator
         [HttpPost]
-        public async Task<ActionResult<Theator>> PostTheator(Theator theator)
+        public async Task<ActionResult<Theater>> PostTheator(Theater theator)
         {
+            // 🔥 VERY IMPORTANT FIX
+            if (theator.LocationId != null)
+            {
+                var location = await _context.Locations.FindAsync(theator.LocationId);
+
+                if (location == null)
+                    return BadRequest("Invalid LocationId");
+
+                theator.Location = location; // attach existing location
+            }
+
             _context.Theaters.Add(theator);
             await _context.SaveChangesAsync();
 
-            // Returns the 201 Created status and the location of the new resource
             return CreatedAtAction(nameof(GetTheator), new { id = theator.Id }, theator);
         }
 
         // 4. UPDATE: PUT api/theator/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTheator(int id, Theator theator)
+        public async Task<IActionResult> PutTheator(int id, Theater theator)
         {
-            if (id != theator.Id) return BadRequest("ID mismatch");
+            if (id != theator.Id) return BadRequest();
+
+            if (theator.LocationId != null)
+            {
+                var location = await _context.Locations.FindAsync(theator.LocationId);
+                if (location == null)
+                    return BadRequest("Invalid LocationId");
+
+                theator.Location = location;
+            }
 
             _context.Entry(theator).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TheatorExists(id)) return NotFound();
-                throw;
-            }
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }
