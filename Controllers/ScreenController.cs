@@ -19,11 +19,21 @@ namespace dotnet_movie_api.Controllers
 
         // ✅ GET: api/screen
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Screen>>> GetScreens()
+        public async Task<IActionResult> GetAll()
         {
-            return await _context.Screens
+            var screens = await _context.Screens
                 .Include(s => s.Theater)
+                .Select(s => new
+                {
+                    s.Id,
+                    s.Name,
+                    s.Capacity,
+                    s.TheaterId,
+                    TheaterName = s.Theater.Name
+                })
                 .ToListAsync();
+
+            return Ok(screens);
         }
 
         // ✅ GET: api/screen/5
@@ -44,38 +54,89 @@ namespace dotnet_movie_api.Controllers
 
         // ✅ POST: api/screen
         [HttpPost]
-        public async Task<ActionResult<Screen>> CreateScreen(Screen screen)
+
+        [HttpPost]
+        public async Task<IActionResult> Create(ScreenDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            // Optional: check if Theater exists
+            var theaterExists = await _context.Theaters
+                .AnyAsync(t => t.Id == dto.TheaterId);
+
+            if (!theaterExists)
+                return BadRequest("Invalid TheaterId ❌");
+
+            var screen = new Screen
+            {
+                Name = dto.Name,
+                Capacity = dto.Capacity,
+                TheaterId = dto.TheaterId
+            };
+
             _context.Screens.Add(screen);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetScreen), new { id = screen.Id }, screen);
+            // ✅ Fetch with Theater (fix null issue)
+            var result = await _context.Screens
+                .Include(s => s.Theater)
+                .Where(s => s.Id == screen.Id)
+                .Select(s => new
+                {
+                    s.Id,
+                    s.Name,
+                    s.Capacity,
+                    s.TheaterId,
+                    TheaterName = s.Theater.Name
+                })
+                .FirstOrDefaultAsync();
+
+            return Ok(result);
         }
 
         // ✅ PUT: api/screen/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateScreen(int id, Screen screen)
+        public async Task<IActionResult> UpdateScreen(int id, ScreenDto dto)
         {
-            if (id != screen.Id)
-                return BadRequest();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            _context.Entry(screen).State = EntityState.Modified;
+            var screen = await _context.Screens.FindAsync(id);
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Screens.Any(e => e.Id == id))
-                    return NotFound();
-                else
-                    throw;
-            }
+            if (screen == null)
+                return NotFound();
 
-            return NoContent();
+            // ✅ Validate Theater
+            var theaterExists = await _context.Theaters
+                .AnyAsync(t => t.Id == dto.TheaterId);
+
+            if (!theaterExists)
+                return BadRequest("Invalid TheaterId ❌");
+
+            // ✅ Update fields safely
+            screen.Name = dto.Name;
+            screen.Capacity = dto.Capacity;
+            screen.TheaterId = dto.TheaterId;
+
+            await _context.SaveChangesAsync();
+
+            // ✅ Return clean response (no circular issue)
+            var result = await _context.Screens
+                .Include(s => s.Theater)
+                .Where(s => s.Id == id)
+                .Select(s => new
+                {
+                    s.Id,
+                    s.Name,
+                    s.Capacity,
+                    s.TheaterId,
+                    TheaterName = s.Theater.Name
+                })
+                .FirstOrDefaultAsync();
+
+            return Ok(result);
         }
-
         // ✅ DELETE: api/screen/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteScreen(int id)

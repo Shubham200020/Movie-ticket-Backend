@@ -1,4 +1,6 @@
-﻿namespace dotnet_movie_api.Module
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace dotnet_movie_api.Module
 {
     public class Showtime
     {
@@ -10,7 +12,7 @@
         // Foreign Keys
         public int MovieId { get; set; }
         public Movie Movie { get; set; } = null!;
-
+        
         public int ScreenId { get; set; }
         public Screen Screen { get; set; } = null!;
 

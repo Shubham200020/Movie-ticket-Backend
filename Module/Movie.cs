@@ -26,5 +26,6 @@ namespace dotnet_movie_api.Module
         public string? WidePosterUrl { get; set; }
 
         public bool Recomended { get; set; }
+        public bool Running { get; set; } = true;
     }
 }

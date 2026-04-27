@@ -23,6 +23,15 @@ namespace dotnet_movie_api.Controllers
         {
             return await _context.Movies.ToListAsync();
         }
+        [HttpGet("recomened")]
+        public async Task<ActionResult<IEnumerable<Movie>>> GetRecommendedMovies()
+        {
+            var movies = await _context.Movies
+                .Where(m => m.Recomended == true)
+                .ToListAsync();
+
+            return Ok(movies);
+        }
         [HttpGet("movies-count")]
         public async Task<IActionResult> GetMoviesCount()
         {
@@ -82,6 +91,9 @@ namespace dotnet_movie_api.Controllers
             movie.Grade = updatedMovie.Grade;
             movie.BoxOffice = updatedMovie.BoxOffice;
             movie.Budget = updatedMovie.Budget;
+            movie.Recomended = updatedMovie.Recomended;
+            movie.ReleaseDate = updatedMovie.ReleaseDate;
+            movie.Running = updatedMovie.Running;
             movie.Min=updatedMovie.Min;
          
             movie.ReleaseDate = updatedMovie.ReleaseDate;

@@ -11,7 +11,7 @@ namespace dotnet_movie_api.Databace
 
         public DbSet<Movie> Movies { get; set; }
        // public DbSet<Cinema> Cinemas { get; set; }
-        public DbSet<Show> Shows { get;  set; }
+      
         public DbSet<Seat> Seats { get; set; }
         public DbSet<Screen> Screens { get; set; }
         public DbSet<Theater> Theaters { get; set; }
