@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace dotnet_movie_api.Module
 {
@@ -11,12 +11,12 @@ namespace dotnet_movie_api.Module
 
         // Foreign Keys
         public int MovieId { get; set; }
-        public Movie Movie { get; set; } = null!;
+        public Movie? Movie { get; set; }
         
         public int ScreenId { get; set; }
-        public Screen Screen { get; set; } = null!;
+        public Screen? Screen { get; set; }
 
-        // Navigation property: One showtime has many specific seat bookings
-        public List<Booking> Bookings { get; set; } = new();
+        // Navigation property
+        public List<Booking>? Bookings { get; set; } = new();
     }
 }

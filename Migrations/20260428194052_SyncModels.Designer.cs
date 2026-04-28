@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using dotnet_movie_api.Databace;
 
@@ -11,9 +12,11 @@ using dotnet_movie_api.Databace;
 namespace dotnet_movie_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260428194052_SyncModels")]
+    partial class SyncModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -141,7 +144,6 @@ namespace dotnet_movie_api.Migrations
                         .HasColumnType("decimal(65,30)");
 
                     b.Property<string>("Genre")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Grade")
@@ -154,14 +156,8 @@ namespace dotnet_movie_api.Migrations
                     b.Property<int>("Min")
                         .HasColumnType("int");
 
-                    b.Property<byte[]>("PosterData")
-                        .HasColumnType("longblob");
-
                     b.Property<string>("PosterUrl")
                         .HasColumnType("longtext");
-
-                    b.Property<double>("Rating")
-                        .HasColumnType("double");
 
                     b.Property<bool>("Recomended")
                         .HasColumnType("tinyint(1)");
@@ -175,9 +171,6 @@ namespace dotnet_movie_api.Migrations
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("longtext");
-
-                    b.Property<byte[]>("WidePosterData")
-                        .HasColumnType("longblob");
 
                     b.Property<string>("WidePosterUrl")
                         .HasColumnType("longtext");

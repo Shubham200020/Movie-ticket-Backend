@@ -1,4 +1,4 @@
-﻿using dotnet_movie_api.Databace;
+using dotnet_movie_api.Databace;
 using dotnet_movie_api.Module;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +39,14 @@ namespace dotnet_movie_api.Controllers
             return CreatedAtAction(nameof(GetLocation), new { id = location.Id }, location);
         }
 
+        [HttpPost("bulk")]
+        public async Task<ActionResult<IEnumerable<Location>>> PostLocations(List<Location> locations)
+        {
+            _context.Locations.AddRange(locations);
+            await _context.SaveChangesAsync();
+            return Ok(locations);
+        }
+
         // 4. UPDATE: PUT api/location/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutLocation(int id, Location location)
@@ -66,6 +74,13 @@ namespace dotnet_movie_api.Controllers
         {
             var location = await _context.Locations.FindAsync(id);
             if (location == null) return NotFound();
+
+            // Handle dependencies: Set LocationId to null in associated Theaters
+            var theaters = await _context.Theaters.Where(t => t.LocationId == id).ToListAsync();
+            foreach (var theater in theaters)
+            {
+                theater.LocationId = null;
+            }
 
             _context.Locations.Remove(location);
             await _context.SaveChangesAsync();

@@ -1,4 +1,4 @@
-﻿using dotnet_movie_api.Databace;
+using dotnet_movie_api.Databace;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -76,13 +76,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-// ❌ TEMPORARILY REMOVE (to avoid crash)
-// using (var scope = app.Services.CreateScope())
-// {
-//     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//     db.Database.EnsureCreated();
-// }
 
 // ✅ Test route
 app.MapGet("/", () => "API Running...");

@@ -1,4 +1,4 @@
-﻿namespace dotnet_movie_api.Module
+namespace dotnet_movie_api.Module
 {
     public class Booking
     {
@@ -11,7 +11,8 @@
         public int ShowtimeId { get; set; }
         public Showtime Showtime { get; set; } = null!;
 
-        public string UserId { get; set; } = string.Empty; // Identity User ID
+        public int UserId { get; set; }
+        public User User { get; set; } = null!;
 
         // Navigation: One booking can have multiple seats (e.g., Row A-1, A-2)
         public List<BookingSeat> SelectedSeats { get; set; } = new();

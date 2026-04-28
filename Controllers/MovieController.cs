@@ -1,4 +1,4 @@
-﻿
+
 using dotnet_movie_api.Databace;
 using dotnet_movie_api.Module;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -59,6 +59,100 @@ namespace dotnet_movie_api.Controllers
             return Ok(movie);
         }
 
+        [HttpPost("bulk")]
+        public async Task<IActionResult> AddMoviesBulk([FromBody] List<MovieRequestDto> movieDtos)
+        {
+            var movies = new List<Movie>();
+            using var client = new HttpClient();
+
+            foreach (var dto in movieDtos)
+            {
+                var movie = new Movie
+                {
+                    Title = dto.Title,
+                    Genre = dto.Genre,
+                    Grade = dto.Grade,
+                    Rating = dto.Rating,
+                    Hour = dto.Hour,
+                    Min = dto.Min,
+                    BoxOffice = dto.BoxOffice,
+                    Budget = dto.Budget,
+                    ReleaseDate = dto.ReleaseDate,
+                    Recomended = dto.Recomended,
+                    Running = dto.Running,
+                    PosterUrl = dto.PosterUrl,
+                    WidePosterUrl = dto.WidePosterUrl
+                };
+
+                if (!string.IsNullOrEmpty(dto.PosterUrl))
+                {
+                    try
+                    {
+                        var data = await client.GetByteArrayAsync(dto.PosterUrl);
+                        movie.PosterData = data;
+                    }
+                    catch { /* Log error or skip binary, but URL is already set */ }
+                }
+
+                if (!string.IsNullOrEmpty(dto.WidePosterUrl))
+                {
+                    try
+                    {
+                        var data = await client.GetByteArrayAsync(dto.WidePosterUrl);
+                        movie.WidePosterData = data;
+                    }
+                    catch { /* Log error or skip binary, but URL is already set */ }
+                }
+
+                movies.Add(movie);
+            }
+
+            _context.Movies.AddRange(movies);
+            await _context.SaveChangesAsync();
+
+            return Ok($"{movies.Count} movies added successfully.");
+        }
+
+        public class MovieRequestDto
+        {
+            public string? Title { get; set; }
+            public List<string> Genre { get; set; } = new();
+            public string? Grade { get; set; }
+            public double Rating { get; set; }
+            public int Hour { get; set; }
+            public int Min { get; set; }
+            public decimal? BoxOffice { get; set; }
+            public decimal? Budget { get; set; }
+            public DateTime ReleaseDate { get; set; }
+            public string? PosterUrl { get; set; }
+            public string? WidePosterUrl { get; set; }
+            public bool Recomended { get; set; }
+            public bool Running { get; set; } = true;
+        }
+
+        [HttpPost("upload")]
+        public async Task<IActionResult> AddMovieWithImages([FromForm] Movie movie, IFormFile? poster, IFormFile? widePoster)
+        {
+            if (poster != null)
+            {
+                using var ms = new MemoryStream();
+                await poster.CopyToAsync(ms);
+                movie.PosterData = ms.ToArray();
+            }
+
+            if (widePoster != null)
+            {
+                using var ms = new MemoryStream();
+                await widePoster.CopyToAsync(ms);
+                movie.WidePosterData = ms.ToArray();
+            }
+
+            _context.Movies.Add(movie);
+            await _context.SaveChangesAsync();
+
+            return Ok(movie);
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddMovie([FromBody] Movie movie)
         {
@@ -67,12 +161,14 @@ namespace dotnet_movie_api.Controllers
 
             return Ok(movie);
         }
+
         [HttpGet("get-all-movies")]
         public async Task<IActionResult> GetAll()
         {
             var movies = await _context.Movies.ToListAsync();
             return Ok(movies);
         }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Movie updatedMovie)
         {
@@ -94,11 +190,9 @@ namespace dotnet_movie_api.Controllers
             movie.Recomended = updatedMovie.Recomended;
             movie.ReleaseDate = updatedMovie.ReleaseDate;
             movie.Running = updatedMovie.Running;
-            movie.Min=updatedMovie.Min;
-         
-            movie.ReleaseDate = updatedMovie.ReleaseDate;
-            movie.PosterUrl = updatedMovie.PosterUrl;
-            movie.WidePosterUrl = updatedMovie.WidePosterUrl;
+            movie.Min = updatedMovie.Min;
+            movie.PosterData = updatedMovie.PosterData;
+            movie.WidePosterData = updatedMovie.WidePosterData;
 
             await _context.SaveChangesAsync();
 
@@ -120,5 +214,42 @@ namespace dotnet_movie_api.Controllers
 
 
 
+        [HttpPut("update/{id}")]
+        public async Task<IActionResult> UpdateMovieWithImages(int id, [FromForm] Movie updatedMovie, IFormFile? poster, IFormFile? widePoster)
+        {
+            var movie = await _context.Movies.FindAsync(id);
+            if (movie == null) return NotFound();
+
+            movie.Title = updatedMovie.Title;
+            movie.Genre = updatedMovie.Genre;
+            movie.Grade = updatedMovie.Grade;
+            movie.Rating = updatedMovie.Rating;
+            movie.Hour = updatedMovie.Hour;
+            movie.Min = updatedMovie.Min;
+            movie.BoxOffice = updatedMovie.BoxOffice;
+            movie.Budget = updatedMovie.Budget;
+            movie.ReleaseDate = updatedMovie.ReleaseDate;
+            movie.Recomended = updatedMovie.Recomended;
+            movie.Running = updatedMovie.Running;
+            movie.PosterUrl = updatedMovie.PosterUrl;
+            movie.WidePosterUrl = updatedMovie.WidePosterUrl;
+
+            if (poster != null)
+            {
+                using var ms = new MemoryStream();
+                await poster.CopyToAsync(ms);
+                movie.PosterData = ms.ToArray();
+            }
+
+            if (widePoster != null)
+            {
+                using var ms = new MemoryStream();
+                await widePoster.CopyToAsync(ms);
+                movie.WidePosterData = ms.ToArray();
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(movie);
+        }
     }
 }

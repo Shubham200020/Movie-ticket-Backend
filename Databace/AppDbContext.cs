@@ -1,4 +1,4 @@
-﻿using dotnet_movie_api.Module;
+using dotnet_movie_api.Module;
 using Microsoft.EntityFrameworkCore;
 namespace dotnet_movie_api.Databace
 {
@@ -29,6 +29,13 @@ namespace dotnet_movie_api.Databace
             modelBuilder.Entity<Theater>().ToTable("Theaters");
             // It is good practice to do the same for Screens
             modelBuilder.Entity<Screen>().ToTable("Screens");
+
+            modelBuilder.Entity<Movie>()
+                .Property(m => m.Genre)
+                .HasConversion(
+                    v => string.Join(',', v),
+                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+                );
 
             base.OnModelCreating(modelBuilder);
         }

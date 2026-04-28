@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace dotnet_movie_api.Module
 {
@@ -9,10 +9,12 @@ namespace dotnet_movie_api.Module
         [Required]
         public string? Title { get; set; }
 
-        public string? Genre { get; set; } // ✅ FIXED
+        public List<string> Genre { get; set; } = new();
 
         [MaxLength(4)]
         public string? Grade { get; set; }
+
+        public double Rating { get; set; }
 
         public int Hour { get; set; }
         public int Min { get; set; }
@@ -24,6 +26,8 @@ namespace dotnet_movie_api.Module
 
         public string? PosterUrl { get; set; }
         public string? WidePosterUrl { get; set; }
+        public byte[]? PosterData { get; set; }
+        public byte[]? WidePosterData { get; set; }
 
         public bool Recomended { get; set; }
         public bool Running { get; set; } = true;

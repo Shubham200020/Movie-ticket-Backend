@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using dotnet_movie_api.Databace;
 
@@ -11,9 +12,11 @@ using dotnet_movie_api.Databace;
 namespace dotnet_movie_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260428200438_RestorePosterUrls")]
+    partial class RestorePosterUrls
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -141,7 +144,6 @@ namespace dotnet_movie_api.Migrations
                         .HasColumnType("decimal(65,30)");
 
                     b.Property<string>("Genre")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Grade")
