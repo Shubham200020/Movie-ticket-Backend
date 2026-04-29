@@ -1,0 +1,7 @@
+C:\Users\hp\source\repos\basics\basics\bin\Debug\basics.exe.config
+C:\Users\hp\source\repos\basics\basics\bin\Debug\basics.exe
+C:\Users\hp\source\repos\basics\basics\bin\Debug\basics.pdb
+C:\Users\hp\source\repos\basics\basics\obj\Debug\basics.csproj.AssemblyReference.cache
+C:\Users\hp\source\repos\basics\basics\obj\Debug\basics.csproj.CoreCompileInputs.cache
+C:\Users\hp\source\repos\basics\basics\obj\Debug\basics.exe
+C:\Users\hp\source\repos\basics\basics\obj\Debug\basics.pdb
