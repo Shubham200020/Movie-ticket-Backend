@@ -1,4 +1,4 @@
-﻿using dotnet_movie_api.Databace;
+using dotnet_movie_api.Databace;
 using dotnet_movie_api.Module;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,13 +23,18 @@ namespace dotnet_movie_api.Controllers
         {
             var screens = await _context.Screens
                 .Include(s => s.Theater)
+                .ThenInclude(t => t.Location)
                 .Select(s => new
                 {
                     s.Id,
                     s.Name,
                     s.Capacity,
+                    s.ScreenType,
                     s.TheaterId,
-                    TheaterName = s.Theater.Name
+                    TheaterName = s.Theater.Name,
+                    LocationId = s.Theater.LocationId,
+                    City = s.Theater.Location != null ? s.Theater.Location.city : "Unknown",
+                    State = s.Theater.Location != null ? s.Theater.Location.State : "Unknown"
                 })
                 .ToListAsync();
 
@@ -72,6 +77,7 @@ namespace dotnet_movie_api.Controllers
             {
                 Name = dto.Name,
                 Capacity = dto.Capacity,
+                ScreenType = dto.ScreenType ?? "2D",
                 TheaterId = dto.TheaterId
             };
 
@@ -87,6 +93,7 @@ namespace dotnet_movie_api.Controllers
                     s.Id,
                     s.Name,
                     s.Capacity,
+                    s.ScreenType,
                     s.TheaterId,
                     TheaterName = s.Theater.Name
                 })
@@ -117,6 +124,7 @@ namespace dotnet_movie_api.Controllers
             // ✅ Update fields safely
             screen.Name = dto.Name;
             screen.Capacity = dto.Capacity;
+            screen.ScreenType = dto.ScreenType ?? "2D";
             screen.TheaterId = dto.TheaterId;
 
             await _context.SaveChangesAsync();
@@ -130,6 +138,7 @@ namespace dotnet_movie_api.Controllers
                     s.Id,
                     s.Name,
                     s.Capacity,
+                    s.ScreenType,
                     s.TheaterId,
                     TheaterName = s.Theater.Name
                 })

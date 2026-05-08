@@ -7,7 +7,6 @@ namespace dotnet_movie_api.Module
         public int Id { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-        public decimal BasePrice { get; set; }
 
         // Foreign Keys
         public int MovieId { get; set; }

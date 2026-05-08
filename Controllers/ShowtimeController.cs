@@ -52,34 +52,51 @@ namespace dotnet_movie_api.Controllers
             return showtime;
         }
 
+        // Helper to log model state errors
+        private IActionResult ValidationFailed()
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+            Console.WriteLine("Validation Errors: " + string.Join(" | ", errors));
+            return BadRequest(ModelState);
+        }
+
         // ✅ POST: api/showtime
         [HttpPost]
-        public async Task<ActionResult<Showtime>> CreateShowtime(Showtime showtime)
+        public async Task<IActionResult> CreateShowtime(ShowtimeRequestDto dto)
         {
+            if (!ModelState.IsValid) return ValidationFailed();
+
+            if (!DateTime.TryParse(dto.StartTime, out var start) || !DateTime.TryParse(dto.EndTime, out var end))
+                return BadRequest("Invalid date format. Use YYYY-MM-DDTHH:mm");
+
             // 1. Basic Validation
-            if (showtime.StartTime >= showtime.EndTime)
+            if (start >= end)
                 return BadRequest("Start time must be before End time.");
 
             // 2. Check if Movie and Screen exist
-            var movieExists = await _context.Movies.AnyAsync(m => m.Id == showtime.MovieId);
-            var screenExists = await _context.Screens.AnyAsync(s => s.Id == showtime.ScreenId);
+            var movieExists = await _context.Movies.AnyAsync(m => m.Id == dto.MovieId);
+            var screenExists = await _context.Screens.AnyAsync(s => s.Id == dto.ScreenId);
 
             if (!movieExists || !screenExists)
                 return BadRequest("Invalid MovieId or ScreenId.");
 
             // 3. Overlap Check
             var isOverlapping = await _context.Showtimes.AnyAsync(s =>
-                s.ScreenId == showtime.ScreenId &&
-                ((showtime.StartTime >= s.StartTime && showtime.StartTime < s.EndTime) ||
-                 (showtime.EndTime > s.StartTime && showtime.EndTime <= s.EndTime) ||
-                 (showtime.StartTime <= s.StartTime && showtime.EndTime >= s.EndTime)));
+                s.ScreenId == dto.ScreenId &&
+                ((start >= s.StartTime && start < s.EndTime) ||
+                 (end > s.StartTime && end <= s.EndTime) ||
+                 (start <= s.StartTime && end >= s.EndTime)));
 
             if (isOverlapping)
                 return BadRequest("This showtime overlaps with another show in the same screen.");
 
-            showtime.Movie = null;
-            showtime.Screen = null;
-            showtime.Bookings = null;
+            var showtime = new Showtime
+            {
+                StartTime = start,
+                EndTime = end,
+                MovieId = dto.MovieId,
+                ScreenId = dto.ScreenId
+            };
 
             try
             {
@@ -93,36 +110,48 @@ namespace dotnet_movie_api.Controllers
             }
         }
 
+        public class ShowtimeRequestDto
+        {
+            public int Id { get; set; }
+            public string StartTime { get; set; } = string.Empty;
+            public string EndTime { get; set; } = string.Empty;
+            public int MovieId { get; set; }
+            public int ScreenId { get; set; }
+        }
+
         // ✅ PUT: api/showtime/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateShowtime(int id, Showtime updatedShowtime)
+        public async Task<IActionResult> UpdateShowtime(int id, ShowtimeRequestDto dto)
         {
-            if (id != updatedShowtime.Id)
+            if (!ModelState.IsValid) return ValidationFailed();
+            if (id != dto.Id)
                 return BadRequest("ID mismatch.");
+
+            if (!DateTime.TryParse(dto.StartTime, out var start) || !DateTime.TryParse(dto.EndTime, out var end))
+                return BadRequest("Invalid date format. Use YYYY-MM-DDTHH:mm");
 
             var showtime = await _context.Showtimes.FindAsync(id);
             if (showtime == null) return NotFound();
 
-            if (updatedShowtime.StartTime >= updatedShowtime.EndTime)
+            if (start >= end)
                 return BadRequest("Start time must be before End time.");
 
             // Overlap Check (excluding current showtime)
             var isOverlapping = await _context.Showtimes.AnyAsync(s =>
                 s.Id != id &&
-                s.ScreenId == updatedShowtime.ScreenId &&
-                ((updatedShowtime.StartTime >= s.StartTime && updatedShowtime.StartTime < s.EndTime) ||
-                 (updatedShowtime.EndTime > s.StartTime && updatedShowtime.EndTime <= s.EndTime) ||
-                 (updatedShowtime.StartTime <= s.StartTime && updatedShowtime.EndTime >= s.EndTime)));
+                s.ScreenId == dto.ScreenId &&
+                ((start >= s.StartTime && start < s.EndTime) ||
+                 (end > s.StartTime && end <= s.EndTime) ||
+                 (start <= s.StartTime && end >= s.EndTime)));
 
             if (isOverlapping)
                 return BadRequest("This showtime overlaps with another show in the same screen.");
 
-            // Update fields manually to avoid issues with navigation properties
-            showtime.StartTime = updatedShowtime.StartTime;
-            showtime.EndTime = updatedShowtime.EndTime;
-            showtime.BasePrice = updatedShowtime.BasePrice;
-            showtime.MovieId = updatedShowtime.MovieId;
-            showtime.ScreenId = updatedShowtime.ScreenId;
+            // Update fields manually
+            showtime.StartTime = start;
+            showtime.EndTime = end;
+            showtime.MovieId = dto.MovieId;
+            showtime.ScreenId = dto.ScreenId;
 
             try
             {
@@ -163,7 +192,8 @@ namespace dotnet_movie_api.Controllers
                 Id = s.Id,
                 Row = s.Row,
                 Number = s.Number,
-                IsAvailable = !bookedSeatIds.Contains(s.Id)
+                IsAvailable = !bookedSeatIds.Contains(s.Id),
+                Price = s.Price
             }).ToList();
 
             return seatStatuses;

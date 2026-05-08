@@ -27,7 +27,7 @@ namespace dotnet_movie_api.Controllers
         public async Task<ActionResult<IEnumerable<Movie>>> GetRecommendedMovies()
         {
             var movies = await _context.Movies
-                .Where(m => m.Recomended == true)
+                .Where(m => m.Recomended == true && m.Running == true)
                 .ToListAsync();
 
             return Ok(movies);

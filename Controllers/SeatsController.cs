@@ -12,6 +12,7 @@ namespace dotnet_movie_api.Controllers
         public int StartNumber { get; set; }
         public int EndNumber { get; set; }
         public string SeatType { get; set; } = "Regular";
+        public decimal Price { get; set; } = 0;
     }
 
     [Route("api/[controller]")]
@@ -52,9 +53,18 @@ namespace dotnet_movie_api.Controllers
         [HttpPost]
         public async Task<ActionResult<Seat>> CreateSeat(Seat seat)
         {
-            _context.Seats.Add(seat);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetSeats), new { id = seat.Id }, seat);
+            seat.Screen = null; // Prevent EF from validating/creating Screen
+            
+            try
+            {
+                _context.Seats.Add(seat);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction(nameof(GetSeats), new { id = seat.Id }, seat);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error creating seat: {ex.Message}");
+            }
         }
 
         // ✅ POST: api/seats/bulk
@@ -67,22 +77,33 @@ namespace dotnet_movie_api.Controllers
             var screenExists = await _context.Screens.AnyAsync(s => s.Id == dto.ScreenId);
             if (!screenExists) return BadRequest("Invalid ScreenId.");
 
+            var existingSeats = await _context.Seats
+                .Where(s => s.ScreenId == dto.ScreenId && s.Row == dto.Row)
+                .Select(s => s.Number)
+                .ToListAsync();
+
             var seats = new List<Seat>();
             for (int i = dto.StartNumber; i <= dto.EndNumber; i++)
             {
+                if (existingSeats.Contains(i)) continue;
+
                 seats.Add(new Seat
                 {
                     ScreenId = dto.ScreenId,
                     Row = dto.Row,
                     Number = i,
-                    SeatType = dto.SeatType
+                    SeatType = dto.SeatType,
+                    Price = dto.Price
                 });
             }
+
+            if (seats.Count == 0)
+                return BadRequest(new { message = "All specified seats already exist for this row." });
 
             _context.Seats.AddRange(seats);
             await _context.SaveChangesAsync();
 
-            return Ok($"{seats.Count} seats created successfully.");
+            return Ok(new { message = $"{seats.Count} seats created successfully." });
         }
 
         // ✅ DELETE: api/seats/5

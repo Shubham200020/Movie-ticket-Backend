@@ -1,4 +1,4 @@
-﻿using dotnet_movie_api.Databace;
+using dotnet_movie_api.Databace;
 using dotnet_movie_api.Module;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
@@ -107,6 +107,12 @@ namespace dotnet_movie_api.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUser(User user)
         {
+            // 🛑 Check if email already exists
+            if (await _context.Users.AnyAsync(u => u.Email == user.Email))
+            {
+                return BadRequest("Email already exists");
+            }
+
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
             _context.Users.Add(user);

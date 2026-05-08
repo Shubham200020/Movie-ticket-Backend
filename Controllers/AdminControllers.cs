@@ -1,4 +1,4 @@
-﻿using dotnet_movie_api.Databace;
+using dotnet_movie_api.Databace;
 using dotnet_movie_api.Module;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +52,12 @@ public class AdminControllers : ControllerBase
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
+
+        // 🛑 Check if email already exists
+        if (await _context.Admins.AnyAsync(a => a.Email == admin.Email))
+        {
+            return BadRequest("Email already exists");
+        }
 
         // 🔐 Hash password
         admin.Password = BCrypt.Net.BCrypt.HashPassword(admin.Password);

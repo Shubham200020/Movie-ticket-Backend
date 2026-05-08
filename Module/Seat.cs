@@ -1,4 +1,4 @@
-﻿namespace dotnet_movie_api.Module
+namespace dotnet_movie_api.Module
 {
     public class Seat
     {
@@ -6,8 +6,9 @@
         public string Row { get; set; } = string.Empty; // e.g., "A", "B"
         public int Number { get; set; } // e.g., 1, 2, 3
         public string SeatType { get; set; } = "Regular"; // e.g., "Gold", "Premium"
+        public decimal Price { get; set; } = 0;
 
         public int ScreenId { get; set; }
-        public Screen Screen { get; set; } = null!;
+        public Screen? Screen { get; set; }
     }
 }

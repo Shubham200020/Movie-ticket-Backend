@@ -1,4 +1,4 @@
-﻿namespace dotnet_movie_api.Module
+namespace dotnet_movie_api.Module
 {
     public class Admin
     {
@@ -10,5 +10,8 @@
 
         public string ?Password { get; set; }
         public string Role { get; set; } = "admin";
+        
+        // Relationship
+        public List<Booking>? Bookings { get; set; }
     }
 }

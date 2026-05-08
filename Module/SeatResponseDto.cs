@@ -1,4 +1,4 @@
-﻿namespace dotnet_movie_api.Module
+namespace dotnet_movie_api.Module
 {
     public class SeatResponseDto
     {
@@ -6,5 +6,6 @@
         public string Row { get; set; } = string.Empty;
         public int Number { get; set; }
         public bool IsAvailable { get; set; }
+        public decimal Price { get; set; }
     }
 }

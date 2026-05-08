@@ -1,10 +1,11 @@
-﻿namespace dotnet_movie_api.Module
+namespace dotnet_movie_api.Module
 {
     public class Screen
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty; // e.g., "Screen 1" or "IMAX"
         public int Capacity { get; set; }
+        public string ScreenType { get; set; } = "2D";
 
         public int TheaterId { get; set; }
         public Theater Theater { get; set; } = null!;

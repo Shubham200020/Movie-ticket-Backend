@@ -22,6 +22,7 @@ namespace dotnet_movie_api.Databace
         public DbSet<User> Users { get; set; }
         public DbSet<Booking> Bookings { get; internal set; }
         public DbSet<Location> Locations { get; internal set; }
+        public DbSet<Review> Reviews { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // This forces EF to look for "Theators" table instead of "theaters"
